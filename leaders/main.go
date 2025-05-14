@@ -1,48 +1,45 @@
-
 package main
 
 import (
 	// "database/sql"
+	"context"
 	// "fmt"
 	"log"
 
 	// _ "github.com/mattn/go-sqlite3"
-	"github.com/redis/go-redis/v9"
 	"net/http"
+
 	"exmpl.com/leaders/config"
-	"exmpl.com/leaders/sqlite"
+	"exmpl.com/leaders/consumer"
 	"exmpl.com/leaders/handlers"
+	"exmpl.com/leaders/redis"
+	"exmpl.com/leaders/sqlite"
+	// "github.com/redis/go-redis/v9"
 )
 
-var REDIS_CLIENT *redis.Client
-
-func initDB() {
-	REDIS_CLIENT = getRedisClient()
+func initApp() {
 	config.AppConfig.Db = sqlite.InitSqlite()
-	// init redis client
-	// ...
+	config.AppConfig.RedisClient = redis.InitRedis()
+	config.AppConfig.BetsChannel = "bets"
 }
 
+var ctx = context.Background()
 
 func main() {
-	initDB()
+	initApp()
 	log.Default().Println("Starting server on :8080")
+
+	go consumer.ConsumeEvents2(ctx, &config.AppConfig)
+
 	http.HandleFunc("/", handlers.RootHandler)
-	// http.HandleFunc("/leaderboards", get_leaderboards)
+	http.HandleFunc("/leaderboards", handlers.GetLeaderboards)
 	http.HandleFunc("/competitions", handlers.CompetitionsHandler)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 
+	// bets_channel := make(chan string)
+	// go consumer.ConsumeEvents(ctx, &config.AppConfig, bets_channel)
+
 	defer config.AppConfig.Db.Close()
-}
-
-
-func getRedisClient() *redis.Client {
-	rdb := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "", // no password set
-		DB:       0,  // use default DB
-	})
-	return rdb
 }
 
 type Event struct {
@@ -68,4 +65,3 @@ type Event struct {
 // 	}
 
 // }
-

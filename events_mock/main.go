@@ -21,8 +21,8 @@ var ctx = context.Background()
 func getRedisClient() *redis.Client {
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
-		Password: "", // no password set
-		DB:       0,  // use default DB
+		Password: "",
+		DB:       0,
 	})
 	return rdb
 }
@@ -69,7 +69,7 @@ func gen_events(num int, redis_client *redis.Client) {
 		err := redis_client.Publish(ctx, BetsChannel, bet).Err()
 		if err != nil {
 			panic(err)
-		}	
+		}
 	}
 
 	// for i := 0; i < num; i++ {
@@ -84,14 +84,13 @@ func build_bet(user_id int) string {
 }
 
 // {
-// 	"event_type": "bet",  
-// 	"user_id": "123",  
-// 	"amount": 0.03,  
-// 	"currency": "BTC",  
-// 	"exchange_rate": 0.00001058,  
-// 	"game": "Poker",  
-// 	"distributor": "DistributorX",  
-// 	"studio": "StudioY",  
-// 	"timestamp": "2025-02-04T12:00:00Z"  
+// 	"event_type": "bet",
+// 	"user_id": "123",
+// 	"amount": 0.03,
+// 	"currency": "BTC",
+// 	"exchange_rate": 0.00001058,
+// 	"game": "Poker",
+// 	"distributor": "DistributorX",
+// 	"studio": "StudioY",
+// 	"timestamp": "2025-02-04T12:00:00Z"
 //   }
-  

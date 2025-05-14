@@ -63,3 +63,28 @@ func CompetitionsHandler(w http.ResponseWriter, r *http.Request) {
 		PostCompetition(w, r)
 	}
 }
+
+func GetLeaderboards(w http.ResponseWriter, r *http.Request) {
+	// fmt.Fprintf(w, "Leaderboards list\n")
+
+	// rows, err := config.AppConfig.Db.Query("SELECT * FROM leaderboards")
+	// if err != nil {
+	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+	// 	return
+	// }
+	// defer rows.Close()
+
+	// var leaderboards []sqlite.Leaderboard
+
+	// for rows.Next() {
+	// 	var lb sqlite.Leaderboard
+	// 	if err := rows.Scan(&lb.Id, &lb.Name); err != nil {
+	// 		http.Error(w, err.Error(), http.StatusInternalServerError)
+	// 		return
+	// 	}
+	// 	leaderboards = append(leaderboards, lb)
+	// }
+
+	// w.Header().Set("Content-Type", "application/json")
+	// json.NewEncoder(w).Encode(leaderboards)
+}
