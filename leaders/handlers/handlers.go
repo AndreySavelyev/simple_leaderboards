@@ -2,9 +2,10 @@ package handlers
 
 import (
 	"encoding/json"
-	"strconv"
-	"net/http"
 	"fmt"
+	"net/http"
+	"strconv"
+
 	"exmpl.com/leaders/config"
 	"exmpl.com/leaders/sqlite"
 )
@@ -41,9 +42,14 @@ func GetCompetitions(w http.ResponseWriter, r *http.Request) {
 }
 
 func PostCompetition(w http.ResponseWriter, r *http.Request) {
-	st, _ := strconv.Atoi(r.PostForm.Get("start_at"))
-	en, _ := strconv.Atoi(r.PostForm.Get("end_at"))
-	var rules = r.PostForm.Get("rules")
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	st, _ := strconv.Atoi(r.PostFormValue("start_at"))
+	en, _ := strconv.Atoi(r.PostFormValue("end_at"))
+	rules := r.PostFormValue("rules")
 
 	sqlite.InsertCompetition(st, en, rules)
 
@@ -51,7 +57,7 @@ func PostCompetition(w http.ResponseWriter, r *http.Request) {
 }
 
 func CompetitionsHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "GET"  {
+	if r.Method == "GET" {
 		GetCompetitions(w, r)
 	} else {
 		PostCompetition(w, r)

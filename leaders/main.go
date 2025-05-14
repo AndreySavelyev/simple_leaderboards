@@ -19,14 +19,14 @@ var REDIS_CLIENT *redis.Client
 func initDB() {
 	REDIS_CLIENT = getRedisClient()
 	config.AppConfig.Db = sqlite.InitSqlite()
-	// init redis
+	// init redis client
 	// ...
 }
 
 
 func main() {
 	initDB()
-
+	log.Default().Println("Starting server on :8080")
 	http.HandleFunc("/", handlers.RootHandler)
 	// http.HandleFunc("/leaderboards", get_leaderboards)
 	http.HandleFunc("/competitions", handlers.CompetitionsHandler)
