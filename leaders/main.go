@@ -3,18 +3,19 @@ package main
 import (
 	// "database/sql"
 	"context"
-	// "fmt"
+	"fmt"
 	"log"
-
-	// _ "github.com/mattn/go-sqlite3"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"exmpl.com/leaders/config"
 	"exmpl.com/leaders/consumer"
 	"exmpl.com/leaders/handlers"
 	"exmpl.com/leaders/redis"
 	"exmpl.com/leaders/sqlite"
-	// "github.com/redis/go-redis/v9"
 )
 
 func initApp() {
@@ -27,6 +28,19 @@ var ctx = context.Background()
 
 func main() {
 	initApp()
+
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	shutdown_ch := make(chan bool, 1)
+
+	go func(ch chan bool, config *config.Cfg) {
+		sig := <-sigs
+		fmt.Println()
+		fmt.Println("signal:", sig)
+		config.Shutdown = true
+		ch <- true
+	}(shutdown_ch, &config.AppConfig)
+
 	log.Default().Println("Starting server on :8080")
 
 	go consumer.ConsumeEvents2(ctx, &config.AppConfig)
@@ -34,7 +48,19 @@ func main() {
 	http.HandleFunc("/", handlers.RootHandler)
 	http.HandleFunc("/leaderboards", handlers.GetLeaderboards)
 	http.HandleFunc("/competitions", handlers.CompetitionsHandler)
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	server := http.Server{
+		Addr: ":8080",
+	}
+
+	go func(ch chan bool, s *http.Server) {
+		<-ch
+		log.Println("Shutting down the server in 3s")
+		config.AppConfig.Shutdown = true
+		time.Sleep(3 * time.Second)
+		s.Shutdown(ctx)
+	}(shutdown_ch, &server)
+
+	server.ListenAndServe()
 
 	// bets_channel := make(chan string)
 	// go consumer.ConsumeEvents(ctx, &config.AppConfig, bets_channel)
