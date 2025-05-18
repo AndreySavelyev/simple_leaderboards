@@ -1,1 +1,3 @@
 .DS_Store
+leaders/*.db
+leaders/leaderboards.db
