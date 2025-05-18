@@ -3,7 +3,9 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
+	"net/url"
 	"strconv"
 
 	"exmpl.com/leaders/config"
@@ -64,27 +66,42 @@ func CompetitionsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func GetLeaderboards(w http.ResponseWriter, r *http.Request) {
-	// fmt.Fprintf(w, "Leaderboards list\n")
+func GetLeaderboard(w http.ResponseWriter, r *http.Request) {
+	var path, err = url.Parse(r.URL.String())
+	if err != nil {
+		log.Println("Error parsing URL:", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Fatal(err)
+	}
 
-	// rows, err := config.AppConfig.Db.Query("SELECT * FROM leaderboards")
-	// if err != nil {
-	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-	// 	return
-	// }
-	// defer rows.Close()
+	compId, err := strconv.Atoi(path.Query().Get("competition_id"))
+	if err != nil { // bad conversion
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
-	// var leaderboards []sqlite.Leaderboard
+	if compId == 0 {
+		http.Error(w, "competition_id is required", http.StatusBadRequest)
+	}
+	if err != nil { // bad conversion
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
-	// for rows.Next() {
-	// 	var lb sqlite.Leaderboard
-	// 	if err := rows.Scan(&lb.Id, &lb.Name); err != nil {
-	// 		http.Error(w, err.Error(), http.StatusInternalServerError)
-	// 		return
-	// 	}
-	// 	leaderboards = append(leaderboards, lb)
-	// }
-
-	// w.Header().Set("Content-Type", "application/json")
-	// json.NewEncoder(w).Encode(leaderboards)
+	var limit int
+	limit, err = strconv.Atoi(path.Query().Get("limit"))
+	if err != nil { // bad conversion
+		limit = 10 // fallback to default
+	}
+	if limit == 0 {
+		limit = 10
+	}
+	lb, err := sqlite.GetLeaderboardByCompetitionId(compId, limit)
+	if err != nil {
+		log.Println("Error getting leaderboard:", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(lb)
 }

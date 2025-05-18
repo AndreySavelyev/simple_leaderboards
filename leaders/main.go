@@ -49,8 +49,8 @@ func main() {
 	go consumer.ConsumeEvents2(ctx, &config.AppConfig)
 
 	http.HandleFunc("/", handlers.RootHandler)
-	http.HandleFunc("/leaderboards", handlers.GetLeaderboards)
 	http.HandleFunc("/competitions", handlers.CompetitionsHandler)
+	http.HandleFunc("/leaderboard", handlers.GetLeaderboard)
 	server := http.Server{
 		Addr: ":8080",
 	}

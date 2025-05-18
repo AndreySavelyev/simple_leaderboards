@@ -240,3 +240,25 @@ type Leaderboard struct {
 	CompetitionId int      `json:"competition_id"`
 	Players       []Player `json:"players"`
 }
+
+func GetLeaderboardByCompetitionId(comp_id int, limit int) (Leaderboard, error) {
+	var lb Leaderboard
+	rows, err := config.AppConfig.Db.Query("SELECT user_id, sum(amount) FROM bets WHERE competition_id = ? group by user_id order by sum(amount) desc limit ?", comp_id, limit)
+	if err != nil {
+		log.Fatal(err)
+		return lb, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var p Player
+		if err := rows.Scan(&p.Id, &p.Amount); err != nil {
+			log.Fatal(err)
+			return lb, err
+		}
+		lb.Players = append(lb.Players, p)
+	}
+
+	lb.CompetitionId = comp_id
+	return lb, nil
+}
