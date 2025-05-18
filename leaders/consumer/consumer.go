@@ -2,10 +2,13 @@ package consumer
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 
 	"exmpl.com/leaders/config"
+	"exmpl.com/leaders/engine"
+	"exmpl.com/leaders/sqlite"
 )
 
 func ConsumeEvents2(ctx context.Context, config *config.Cfg) {
@@ -32,8 +35,15 @@ func ConsumeEvents2(ctx context.Context, config *config.Cfg) {
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println(msg.Channel, msg.Payload)
-		log.Println(msg.Channel, msg.Payload)
+
+		event := sqlite.Event{}
+
+		if err := json.Unmarshal([]byte(msg.Payload), &event); err != nil {
+			panic(err)
+		}
+		// log.Println(msg.Channel, event)
+		// log.Printf("Received ========================: %+v\n", event)
+		engine.ProcessEvent(&event)
 	}
 }
 

@@ -13,6 +13,7 @@ import (
 
 	"exmpl.com/leaders/config"
 	"exmpl.com/leaders/consumer"
+	"exmpl.com/leaders/engine"
 	"exmpl.com/leaders/handlers"
 	"exmpl.com/leaders/redis"
 	"exmpl.com/leaders/sqlite"
@@ -22,6 +23,8 @@ func initApp() {
 	config.AppConfig.Db = sqlite.InitSqlite()
 	config.AppConfig.RedisClient = redis.InitRedis()
 	config.AppConfig.BetsChannel = "bets"
+	config.AppConfig.CompsChannel = make(chan int64)
+	engine.InitEngine()
 }
 
 var ctx = context.Background()
@@ -74,6 +77,20 @@ type Event struct {
 	UserId    int    `json:"user_id"`
 	BetAmount int    `json:"bet_amount"`
 }
+
+// T:
+//
+
+// event from redis
+// for each competition {
+// 	if event.suits?(competition)
+// 		// create a bet for this comp
+// 	}
+// }
+
+// type Event
+// type Competition
+// type Bet(user, amount, competition_id)
 
 // func eventsListener(redis_client *redis.Client, ch chan string) {
 // 	// Listen for events from Redis

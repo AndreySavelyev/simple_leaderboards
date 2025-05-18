@@ -1,7 +1,7 @@
 TODO:
 
 CONSUME API:
-  - read from redis
+  - read from redis *** part done
   - parse payload
   - calculate stuff
   - insert into DB
@@ -14,7 +14,9 @@ READ API:
 
 
 
-* goroutine to listen for events and send them to a channel
 * another goroutine to read from channnel and process events
-* thing to listen for signals and shutdown gracefully
+* goroutine to listen for events and send them to a channel
 
+
+DONE:
+* thing to listen for signals and shutdown gracefully

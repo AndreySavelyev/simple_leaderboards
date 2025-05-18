@@ -7,11 +7,11 @@ import (
 )
 
 type Cfg struct {
-	Db          *sql.DB
-	RedisClient *redis.Client
-	Zz          int
-	BetsChannel string
-	Shutdown    bool
+	Db           *sql.DB
+	RedisClient  *redis.Client
+	BetsChannel  string
+	Shutdown     bool
+	CompsChannel chan int64
 }
 
 var AppConfig = Cfg{Shutdown: false}
