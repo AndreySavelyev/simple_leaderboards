@@ -206,6 +206,7 @@ type Competition struct {
 	StartAt       int64  `json:"start_at"`
 	EndAt         int64  `json:"end_at"`
 	Rules         string `json:"rules"`
+	Compiles      bool
 	CompiledRules *vm.Program
 }
 

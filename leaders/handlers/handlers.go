@@ -14,14 +14,15 @@ import (
 )
 
 func RootHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello from the leaderboard service\n")
-	fmt.Fprintf(w, "To list leaderboard visit /leaderboard?competition_id=:id&limit=:limit\n")
-	fmt.Fprintf(w, "To list competitions visit /competitions\n")
+	var tmplFile = "index.html"
+	tmpl, _ := template.ParseFiles(tmplFile)
+	tmpl.Execute(w, nil)
+	// fmt.Fprintf(w, "Hello from the leaderboard service\n")
+	// fmt.Fprintf(w, "To list leaderboard visit /leaderboard?competition_id=:id&limit=:limit\n")
+	// fmt.Fprintf(w, "To list competitions visit /competitions\n")
 }
 
 func GetCompetitions(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Competitions list\n")
-
 	rows, err := config.AppConfig.Db.Query("SELECT * FROM competitions")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -40,8 +41,13 @@ func GetCompetitions(w http.ResponseWriter, r *http.Request) {
 		competitions = append(competitions, cm)
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(competitions)
+	w.Header().Set("Content-Type", "text/html")
+	funcMap := template.FuncMap{
+		"running": func(comp sqlite.Competition) string { return strconv.FormatBool(comp.IsRunningNow()) },
+	}
+	var tmplFile = "competitions.html"
+	tmpl, _ := template.New(tmplFile).Funcs(funcMap).ParseFiles(tmplFile)
+	tmpl.Execute(w, competitions)
 }
 
 func PostCompetition(w http.ResponseWriter, r *http.Request) {
@@ -151,3 +157,28 @@ func GetLeaderboard(w http.ResponseWriter, r *http.Request) {
 	tmpl, _ := template.New(tmplFile).Funcs(funcMap).ParseFiles(tmplFile)
 	tmpl.Execute(w, lb)
 }
+
+// func GetCompetitions2(w http.ResponseWriter, r *http.Request) {
+// 	fmt.Fprintf(w, "Competitions list\n")
+
+// 	rows, err := config.AppConfig.Db.Query("SELECT * FROM competitions")
+// 	if err != nil {
+// 		http.Error(w, err.Error(), http.StatusInternalServerError)
+// 		return
+// 	}
+// 	defer rows.Close()
+
+// 	var competitions []sqlite.Competition
+
+// 	for rows.Next() {
+// 		var cm sqlite.Competition
+// 		if err := rows.Scan(&cm.Id, &cm.StartAt, &cm.EndAt, &cm.Rules); err != nil {
+// 			http.Error(w, err.Error(), http.StatusInternalServerError)
+// 			return
+// 		}
+// 		competitions = append(competitions, cm)
+// 	}
+
+// 	w.Header().Set("Content-Type", "application/json")
+// 	json.NewEncoder(w).Encode(competitions)
+// }

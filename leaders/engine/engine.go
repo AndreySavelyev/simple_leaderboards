@@ -20,7 +20,17 @@ func InitEngine() {
 		log.Fatal("Error loading competitions:", err)
 	}
 	log.Printf("Loaded %d competitions\n", len(comps))
-	Competitions = append(Competitions, comps...)
+	for _, comp := range comps {
+		program, err := expr.Compile(comp.Rules, expr.Env(sqlite.Event{}))
+		if err != nil {
+			log.Printf("Error compiling rules: %s for competition %d. Marking as invalid", err, comp.Id)
+			comp.Compiles = false
+		}
+		comp.Compiles = true
+		comp.CompiledRules = program
+		Competitions = append(Competitions, comp)
+
+	}
 }
 
 func ProcessEvent(event *sqlite.Event) {
@@ -32,6 +42,13 @@ func ProcessEvent(event *sqlite.Event) {
 			return
 		}
 		log.Println("New competition received:", newComp)
+		program, err := expr.Compile(newComp.Rules, expr.Env(sqlite.Event{}))
+		if err != nil {
+			log.Printf("Error compiling rules: %s for competition %d. Marking as invalid", err, newComp.Id)
+			newComp.Compiles = false
+		}
+		newComp.Compiles = true
+		newComp.CompiledRules = program
 		Competitions = append(Competitions, newComp)
 		log.Println("New competitions count:", len(Competitions))
 		processEvent(event)
@@ -42,24 +59,11 @@ func ProcessEvent(event *sqlite.Event) {
 }
 
 func processEvent(event *sqlite.Event) {
-	// create or update user record
-	// record event in the database
 	sqlite.CreateUser(event.UserId)
 	sqlite.CreateEvent(event)
 	for _, comp := range Competitions {
-		if comp.IsRunningNow() {
-			// log.Println("Competition is running now:", comp)
-
-			// program, err := expr.Compile(comp.Rules, expr.AsInt())
-			program, err := expr.Compile(comp.Rules, expr.Env(sqlite.Event{}))
-
-			if err != nil {
-				log.Println("Error compiling rules:", err)
-				// TODO: mark comp as invalid and skip next time
-				continue
-			}
-			// log.Printf("event: %+v, comp: %+v\n", event, comp)
-			output, err := expr.Run(program, event)
+		if comp.IsRunningNow() && comp.Compiles {
+			output, err := expr.Run(comp.CompiledRules, event)
 			if err != nil {
 				panic(err)
 			}

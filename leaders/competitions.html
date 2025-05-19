@@ -1,0 +1,20 @@
+<h2>Competitions </h2>
+
+<p>Here is the list of competitions:</p>
+
+<table style="border: 1px solid black;">
+  <tr>
+    <th>Competition ID</th>
+    <th>Running now?</th>
+    <th>Leaderboard</th>
+  </tr>
+  {{ range . }}
+  <tr style="border: 1px solid black;">
+    <td>{{ .Id }}</td>
+    <td>{{ . | running }}</td>
+    <td><a href="/leaderboard?competition_id={{ .Id}}&limit=10" target="_blank">leaderboard</td>
+  </tr>
+  {{ end }}
+</table>
+
+<a href="/">Back home</a>
