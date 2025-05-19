@@ -13,8 +13,8 @@ import (
 )
 
 const BurstFactor = 5
-const RatePerSec = 20
-const UserCount = 10
+const RatePerSec = 50
+const UserCount = 20
 const BurstProbability = 0.2
 const BetsChannel = "bets"
 

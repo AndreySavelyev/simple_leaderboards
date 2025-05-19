@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"net/url"
@@ -14,7 +15,7 @@ import (
 
 func RootHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hello from the leaderboard service\n")
-	fmt.Fprintf(w, "To list leaderboards visit /leaderboards\n")
+	fmt.Fprintf(w, "To list leaderboard visit /leaderboard?competition_id=:id&limit=:limit\n")
 	fmt.Fprintf(w, "To list competitions visit /competitions\n")
 }
 
@@ -66,7 +67,7 @@ func CompetitionsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func GetLeaderboard(w http.ResponseWriter, r *http.Request) {
+func GetLeaderboardJson(w http.ResponseWriter, r *http.Request) {
 	var path, err = url.Parse(r.URL.String())
 	if err != nil {
 		log.Println("Error parsing URL:", err)
@@ -104,4 +105,49 @@ func GetLeaderboard(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(lb)
+}
+
+func GetLeaderboard(w http.ResponseWriter, r *http.Request) {
+	var path, err = url.Parse(r.URL.String())
+	if err != nil {
+		log.Println("Error parsing URL:", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Fatal(err)
+	}
+
+	compId, err := strconv.Atoi(path.Query().Get("competition_id"))
+	if err != nil { // bad conversion
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if compId == 0 {
+		http.Error(w, "competition_id is required", http.StatusBadRequest)
+	}
+	if err != nil { // bad conversion
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	var limit int
+	limit, err = strconv.Atoi(path.Query().Get("limit"))
+	if err != nil { // bad conversion
+		limit = 10 // fallback to default
+	}
+	if limit == 0 {
+		limit = 10
+	}
+	lb, err := sqlite.GetLeaderboardByCompetitionId(compId, limit)
+	if err != nil {
+		log.Println("Error getting leaderboard:", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	funcMap := template.FuncMap{
+		"pretty": func(n float64) string { return strconv.FormatFloat(float64(n), 'f', 4, 64) },
+	}
+	var tmplFile = "leaderboard.html"
+	tmpl, _ := template.New(tmplFile).Funcs(funcMap).ParseFiles(tmplFile)
+	tmpl.Execute(w, lb)
 }

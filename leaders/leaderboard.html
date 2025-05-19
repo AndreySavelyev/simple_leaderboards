@@ -1,0 +1,13 @@
+<p>Leaderboard for competition {{ .CompetitionId }}</p>
+<table style="border: 1px solid black;">
+  <tr>
+    <th>User ID</th>
+    <th>Point</th>
+  </tr>
+{{ range .Players }}
+  <tr>
+    <td style="border: 1px solid black;">{{ .Id }}</td>
+    <td style="border: 1px solid black;">{{ .Amount | pretty }}</td>
+  </tr>
+{{ end }}
+</table>
