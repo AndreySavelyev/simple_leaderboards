@@ -13,7 +13,7 @@ import (
 )
 
 const BurstFactor = 5
-const RatePerSec = 50
+const RatePerSec = 10
 const UserCount = 20
 const BurstProbability = 0.2
 const BetsChannel = "bets"
@@ -60,7 +60,6 @@ func main() {
 
 	var redis_client = getRedisClient()
 
-	// go func() {
 	for {
 		bets_count := RatePerSec
 		if rand.Float32() > BurstProbability {
@@ -77,11 +76,7 @@ func main() {
 		gen_events(bets_count, redis_client)
 		fmt.Println()
 	}
-	// }()
 
-	// Wait for a while to let the goroutine finish
-	// time.Sleep(10 * time.Second)
-	// fmt.Println("All requests processed")
 }
 
 func gen_events(num int, redis_client *redis.Client) {
@@ -97,17 +92,22 @@ func gen_events(num int, redis_client *redis.Client) {
 			panic(err)
 		}
 	}
-
-	// for i := 0; i < num; i++ {
-	// 	// Simulate event generation
-	// 	fmt.Println("Event generated for user:", rand.Intn(UserCount))
-	// }
 }
 
 func build_bet(user_id int) Event {
-	var bet = rand.Intn(100)
+	var bet = float64(rand.Intn(100))
 	var event_type = randEventType()
 	var event_currency = randEventCurrency()
+
+	// NOTE: BTC & ETH are making too big numbers in the leaderboards
+	// so we adjust them a little to make them more realistic
+	if event_currency.name == "BTC" {
+		bet = bet / 100000.0
+	}
+	if event_currency.name == "ETH" {
+		bet = bet / 2000.0
+	}
+
 	var event = Event{
 		EventType:    event_type,
 		UserId:       user_id,
@@ -119,7 +119,7 @@ func build_bet(user_id int) Event {
 		Studio:       randEventStudio(),
 		Timestamp:    time.Now().Format(time.RFC3339),
 	}
-	log.Printf("User: %d | bet: %d", user_id, bet)
+	log.Printf("User: %d | bet: %f", user_id, bet)
 	return event
 
 }
@@ -127,13 +127,13 @@ func build_bet(user_id int) Event {
 type Event struct {
 	EventType    string  `json:"event_type"` // bet, win, loss
 	UserId       int     `json:"user_id"`
-	Amount       int     `json:"amount"`
+	Amount       float64 `json:"amount"`
 	Currency     string  `json:"currency"`
 	ExchangeRate float64 `json:"exchange_rate"`
 	Game         string  `json:"game"`
 	Distributor  string  `json:"distributor"`
 	Studio       string  `json:"studio"`
-	Timestamp    string  `json:"timestamp"` // make this a Time type
+	Timestamp    string  `json:"timestamp"` // make this a Time type?
 }
 
 func randEventType() string {

@@ -10,9 +10,6 @@ import (
 
 var Competitions = make([]sqlite.Competition, 0)
 
-// read from channel into a slice
-// program, err := expr.Compile(code, expr.Env(Env{}))
-
 func InitEngine() {
 	// TODO: make loading only for the comps that are relevant for current time
 	comps, err := sqlite.GetAllCompetitions()

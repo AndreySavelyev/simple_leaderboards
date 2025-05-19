@@ -1,7 +1,6 @@
 package main
 
 import (
-	// "database/sql"
 	"context"
 	"fmt"
 	"log"
@@ -46,7 +45,7 @@ func main() {
 
 	log.Default().Println("Starting server on :8080")
 
-	go consumer.ConsumeEvents2(ctx, &config.AppConfig)
+	go consumer.ConsumeEvents(ctx, &config.AppConfig)
 
 	http.HandleFunc("/", handlers.RootHandler)
 	http.HandleFunc("/competitions", handlers.CompetitionsHandler)
@@ -65,9 +64,6 @@ func main() {
 
 	server.ListenAndServe()
 
-	// bets_channel := make(chan string)
-	// go consumer.ConsumeEvents(ctx, &config.AppConfig, bets_channel)
-
 	defer config.AppConfig.Db.Close()
 }
 
@@ -77,34 +73,3 @@ type Event struct {
 	UserId    int    `json:"user_id"`
 	BetAmount int    `json:"bet_amount"`
 }
-
-// T:
-//
-
-// event from redis
-// for each competition {
-// 	if event.suits?(competition)
-// 		// create a bet for this comp
-// 	}
-// }
-
-// type Event
-// type Competition
-// type Bet(user, amount, competition_id)
-
-// func eventsListener(redis_client *redis.Client, ch chan string) {
-// 	// Listen for events from Redis
-// 	pubsub := redisClient.PSubscribe("events")
-// 	defer pubsub.Close()
-
-// 	for {
-// 		msg, err := pubsub.ReceiveMessage()
-// 		if err != nil {
-// 			fmt.Println("Error receiving message:", err)
-// 			continue
-// 		}
-
-// 		fmt.Println("Received message:", msg.Payload)
-// 	}
-
-// }

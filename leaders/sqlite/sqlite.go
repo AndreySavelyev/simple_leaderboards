@@ -225,7 +225,7 @@ type Event struct {
 	Game         string  `json:"game" expr:"game"`
 	Distributor  string  `json:"distributor" expr:"distributor"`
 	Studio       string  `json:"studio" expr:"studio"`
-	Timestamp    string  `json:"timestamp" expr:"timestamp"` // make this a Time type
+	Timestamp    string  `json:"timestamp" expr:"timestamp"` // make this a Time type?
 }
 
 func (e *Event) base_amount() float64 {

@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"fmt"
 	"html/template"
 	"log"
@@ -17,9 +16,6 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
 	var tmplFile = "index.html"
 	tmpl, _ := template.ParseFiles(tmplFile)
 	tmpl.Execute(w, nil)
-	// fmt.Fprintf(w, "Hello from the leaderboard service\n")
-	// fmt.Fprintf(w, "To list leaderboard visit /leaderboard?competition_id=:id&limit=:limit\n")
-	// fmt.Fprintf(w, "To list competitions visit /competitions\n")
 }
 
 func GetCompetitions(w http.ResponseWriter, r *http.Request) {
@@ -73,46 +69,6 @@ func CompetitionsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func GetLeaderboardJson(w http.ResponseWriter, r *http.Request) {
-	var path, err = url.Parse(r.URL.String())
-	if err != nil {
-		log.Println("Error parsing URL:", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		log.Fatal(err)
-	}
-
-	compId, err := strconv.Atoi(path.Query().Get("competition_id"))
-	if err != nil { // bad conversion
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	if compId == 0 {
-		http.Error(w, "competition_id is required", http.StatusBadRequest)
-	}
-	if err != nil { // bad conversion
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	var limit int
-	limit, err = strconv.Atoi(path.Query().Get("limit"))
-	if err != nil { // bad conversion
-		limit = 10 // fallback to default
-	}
-	if limit == 0 {
-		limit = 10
-	}
-	lb, err := sqlite.GetLeaderboardByCompetitionId(compId, limit)
-	if err != nil {
-		log.Println("Error getting leaderboard:", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(lb)
-}
-
 func GetLeaderboard(w http.ResponseWriter, r *http.Request) {
 	var path, err = url.Parse(r.URL.String())
 	if err != nil {
@@ -158,18 +114,52 @@ func GetLeaderboard(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, lb)
 }
 
+// func GetLeaderboardJson(w http.ResponseWriter, r *http.Request) {
+// 	var path, err = url.Parse(r.URL.String())
+// 	if err != nil {
+// 		log.Println("Error parsing URL:", err)
+// 		http.Error(w, err.Error(), http.StatusBadRequest)
+// 		log.Fatal(err)
+// 	}
+// 	compId, err := strconv.Atoi(path.Query().Get("competition_id"))
+// 	if err != nil { // bad conversion
+// 		http.Error(w, err.Error(), http.StatusBadRequest)
+// 		return
+// 	}
+// 	if compId == 0 {
+// 		http.Error(w, "competition_id is required", http.StatusBadRequest)
+// 	}
+// 	if err != nil { // bad conversion
+// 		http.Error(w, err.Error(), http.StatusBadRequest)
+// 		return
+// 	}
+// 	var limit int
+// 	limit, err = strconv.Atoi(path.Query().Get("limit"))
+// 	if err != nil { // bad conversion
+// 		limit = 10 // fallback to default
+// 	}
+// 	if limit == 0 {
+// 		limit = 10
+// 	}
+// 	lb, err := sqlite.GetLeaderboardByCompetitionId(compId, limit)
+// 	if err != nil {
+// 		log.Println("Error getting leaderboard:", err)
+// 		http.Error(w, err.Error(), http.StatusInternalServerError)
+// 		return
+// 	}
+// 	w.Header().Set("Content-Type", "application/json")
+// 	json.NewEncoder(w).Encode(lb)
+// }
+
 // func GetCompetitions2(w http.ResponseWriter, r *http.Request) {
 // 	fmt.Fprintf(w, "Competitions list\n")
-
 // 	rows, err := config.AppConfig.Db.Query("SELECT * FROM competitions")
 // 	if err != nil {
 // 		http.Error(w, err.Error(), http.StatusInternalServerError)
 // 		return
 // 	}
 // 	defer rows.Close()
-
 // 	var competitions []sqlite.Competition
-
 // 	for rows.Next() {
 // 		var cm sqlite.Competition
 // 		if err := rows.Scan(&cm.Id, &cm.StartAt, &cm.EndAt, &cm.Rules); err != nil {
@@ -178,7 +168,6 @@ func GetLeaderboard(w http.ResponseWriter, r *http.Request) {
 // 		}
 // 		competitions = append(competitions, cm)
 // 	}
-
 // 	w.Header().Set("Content-Type", "application/json")
 // 	json.NewEncoder(w).Encode(competitions)
 // }
