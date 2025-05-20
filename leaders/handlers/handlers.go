@@ -58,6 +58,7 @@ func PostCompetition(w http.ResponseWriter, r *http.Request) {
 
 	sqlite.InsertCompetition(st, en, rules)
 
+	log.Println("Competition created:", st, en, rules)
 	fmt.Fprintf(w, "Competition created\n")
 }
 

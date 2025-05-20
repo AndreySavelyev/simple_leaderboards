@@ -6,12 +6,14 @@
   <tr>
     <th>Competition ID</th>
     <th>Running now?</th>
+    <th>Rules</th>
     <th>Leaderboard</th>
   </tr>
   {{ range . }}
   <tr style="border: 1px solid black;">
     <td>{{ .Id }}</td>
     <td>{{ . | running }}</td>
+    <td>{{ .Rules }}</td>
     <td><a href="/leaderboard?competition_id={{ .Id}}&limit=10" target="_blank">leaderboard</td>
   </tr>
   {{ end }}

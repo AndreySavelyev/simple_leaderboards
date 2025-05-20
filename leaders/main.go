@@ -22,7 +22,10 @@ func initApp() {
 	config.AppConfig.Db = sqlite.InitSqlite()
 	config.AppConfig.RedisClient = redis.InitRedis()
 	config.AppConfig.BetsChannel = "bets"
-	config.AppConfig.CompsChannel = make(chan int64)
+
+	// TODO: think how to implement re-init of the engine
+	// when a new competition is added but no events are received
+	config.AppConfig.CompsChannel = make(chan int64, 100)
 	engine.InitEngine()
 }
 
@@ -56,20 +59,13 @@ func main() {
 
 	go func(ch chan bool, s *http.Server) {
 		<-ch
-		log.Println("Shutting down the server in 3s")
+		log.Println("Shutting down the server in 2s")
 		config.AppConfig.Shutdown = true
-		time.Sleep(3 * time.Second)
+		time.Sleep(2 * time.Second)
 		s.Shutdown(ctx)
 	}(shutdown_ch, &server)
 
 	server.ListenAndServe()
 
 	defer config.AppConfig.Db.Close()
-}
-
-type Event struct {
-	Id        int    `json:"id"`
-	Name      string `json:"name"`
-	UserId    int    `json:"user_id"`
-	BetAmount int    `json:"bet_amount"`
 }

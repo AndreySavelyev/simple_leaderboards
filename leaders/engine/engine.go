@@ -26,7 +26,6 @@ func InitEngine() {
 		comp.Compiles = true
 		comp.CompiledRules = program
 		Competitions = append(Competitions, comp)
-
 	}
 }
 
@@ -68,8 +67,9 @@ func processEvent(event *sqlite.Event) {
 				sqlite.CreateBet(event, comp.Id)
 				log.Println("Event processed successfully for comp: ", comp.Id)
 			} else {
-				log.Printf("No processing for this comp.")
-				// log.Printf("No processing for this comp. Rules %s, evt: %+v \n", comp.Rules, event)
+				// log.Printf("No processing for this comp.")
+				log.Printf("No processing for this comp. Rules %s, evt: %+v \n", comp.Rules, event)
+				log.Println("")
 			}
 		}
 	}

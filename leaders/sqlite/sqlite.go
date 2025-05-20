@@ -139,6 +139,7 @@ func InsertCompetition(start, end int, rules string) {
 		log.Fatal(err)
 		return
 	}
+	log.Println("New competition created with ID:", newId)
 	config.AppConfig.CompsChannel <- newId
 }
 
