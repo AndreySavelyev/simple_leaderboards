@@ -92,3 +92,8 @@ CREATE TABLE competitions (
 During the testing I discovered an issue with it in a situation when there are no events incoming from the mock server. Because there is no processing of the events, the Competitions channel(`config.AppConfig.CompsChannel`) doesn't get read so the HTTP handler gets blocked. To mitigate that I decided to make that channel buffered with 100 elements for the time being but generally this requires some refactoring.
 
 
+## Testing
+Run
+```
+go test ./... -v
+```
