@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	"exmpl.com/leaders/config"
+	"exmpl.com/leaders/engine"
 	"exmpl.com/leaders/sqlite"
 )
 
@@ -109,6 +110,7 @@ func GetLeaderboard(w http.ResponseWriter, r *http.Request) {
 
 	funcMap := template.FuncMap{
 		"pretty": func(n float64) string { return strconv.FormatFloat(float64(n), 'f', 4, 64) },
+		"reward": func(rank int) int { return engine.RewardForPosition(rank) },
 	}
 	var tmplFile = "leaderboard.html"
 	tmpl, _ := template.New(tmplFile).Funcs(funcMap).ParseFiles(tmplFile)

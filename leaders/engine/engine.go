@@ -74,3 +74,19 @@ func processEvent(event *sqlite.Event) {
 		}
 	}
 }
+
+func RewardForPosition(rank int) int {
+	switch rank {
+	case 1:
+		return 1000
+	case 2:
+		return 500
+	case 3:
+		return 250
+	default:
+		if rank > 3 && rank <= 50 {
+			return 50
+		}
+		return 0
+	}
+}

@@ -236,6 +236,7 @@ func (e *Event) base_amount() float64 {
 type Player struct {
 	Id     int     `json:"id"`
 	Amount float64 `json:"amount"`
+	Rank   int     `json:"rank"`
 }
 
 type Leaderboard struct {
@@ -251,13 +252,15 @@ func GetLeaderboardByCompetitionId(comp_id int, limit int) (Leaderboard, error) 
 		return lb, err
 	}
 	defer rows.Close()
-
+	rank := 1
 	for rows.Next() {
 		var p Player
 		if err := rows.Scan(&p.Id, &p.Amount); err != nil {
 			log.Fatal(err)
 			return lb, err
 		}
+		p.Rank = rank
+		rank++
 		lb.Players = append(lb.Players, p)
 	}
 

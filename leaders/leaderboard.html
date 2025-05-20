@@ -3,11 +3,13 @@
   <tr>
     <th>User ID</th>
     <th>Points</th>
+    <th>Reward</th>
   </tr>
 {{ range .Players }}
   <tr>
     <td style="border: 1px solid black;">{{ .Id }}</td>
     <td style="border: 1px solid black;">{{ .Amount | pretty }}</td>
+    <td style="border: 1px solid black;">{{ .Rank | reward }}</td>
   </tr>
 {{ end }}
 </table>
