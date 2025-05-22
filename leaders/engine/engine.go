@@ -3,16 +3,20 @@ package engine
 import (
 	"log"
 
+	// "exmpl.com/leaders/config"
 	"exmpl.com/leaders/config"
+	"exmpl.com/leaders/repository"
 	"exmpl.com/leaders/sqlite"
 	"github.com/expr-lang/expr"
 )
 
-var Competitions = make([]sqlite.Competition, 0)
+var Competitions = make([]repository.Competition, 0)
+var Persistence repository.PersistenceService
 
-func InitEngine() {
+func InitEngine(persistence *repository.PersistenceService) {
+	Persistence = *persistence
 	// TODO: make loading only for the comps that are relevant for current time
-	comps, err := sqlite.GetAllCompetitions()
+	comps, err := Persistence.GetCompetitions()
 	if err != nil {
 		log.Fatal("Error loading competitions:", err)
 	}
@@ -32,7 +36,7 @@ func InitEngine() {
 func ProcessEvent(event *sqlite.Event) {
 	select {
 	case newCompId := <-config.AppConfig.CompsChannel:
-		newComp, err := sqlite.GetCompetitionById(newCompId)
+		newComp, err := Persistence.GetCompetitionById(newCompId)
 		if err != nil {
 			log.Println("Error getting competition by ID:", err) // shouldn't really happen
 			return

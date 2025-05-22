@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"exmpl.com/leaders/config"
+	"exmpl.com/leaders/repository"
 	"github.com/expr-lang/expr/vm"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -41,6 +42,29 @@ func InitSqlite() *sql.DB {
 	createEventsTable(db)
 
 	return db
+}
+
+type SqliteRepo struct {
+}
+
+func (r *SqliteRepo) GetAllCompetitions(db *sql.DB) ([]repository.Competition, error) {
+	rows, err := db.Query("SELECT * FROM competitions")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var competitions []repository.Competition
+
+	for rows.Next() {
+		var cm repository.Competition
+		if err := rows.Scan(&cm.Id, &cm.StartAt, &cm.EndAt, &cm.Rules); err != nil {
+			return nil, err
+		}
+		competitions = append(competitions, cm)
+	}
+
+	return competitions, nil
 }
 
 func createCompetitionsTable(db *sql.DB) {
@@ -143,33 +167,13 @@ func InsertCompetition(start, end int, rules string) {
 	config.AppConfig.CompsChannel <- newId
 }
 
-func GetCompetitionById(Id int64) (Competition, error) {
-	var cm Competition
-	err := config.AppConfig.Db.QueryRow("SELECT * FROM competitions WHERE id = ?", Id).Scan(&cm.Id, &cm.StartAt, &cm.EndAt, &cm.Rules)
+func (r *SqliteRepo) GetCompetitionById(db *sql.DB, id int64) (repository.Competition, error) {
+	var cm repository.Competition
+	err := config.AppConfig.Db.QueryRow("SELECT * FROM competitions WHERE id = ?", id).Scan(&cm.Id, &cm.StartAt, &cm.EndAt, &cm.Rules)
 	if err != nil {
 		return cm, err
 	}
 	return cm, nil
-}
-
-func GetAllCompetitions() ([]Competition, error) {
-	rows, err := config.AppConfig.Db.Query("SELECT * FROM competitions")
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var competitions []Competition
-
-	for rows.Next() {
-		var cm Competition
-		if err := rows.Scan(&cm.Id, &cm.StartAt, &cm.EndAt, &cm.Rules); err != nil {
-			return nil, err
-		}
-		competitions = append(competitions, cm)
-	}
-
-	return competitions, nil
 }
 
 func CreateUser(user_id int) {
@@ -179,7 +183,7 @@ func CreateUser(user_id int) {
 	}
 }
 
-func CreateBet(event *Event, comp_id int) {
+func CreateBet(event *Event, comp_id int64) {
 	_, err := config.AppConfig.Db.Exec("INSERT INTO bets (user_id, amount, competition_id) VALUES (?, ?, ?)", event.UserId, event.base_amount(), comp_id)
 	if err != nil {
 		log.Println("Error creating bet:", err)

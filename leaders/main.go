@@ -15,18 +15,24 @@ import (
 	"exmpl.com/leaders/engine"
 	"exmpl.com/leaders/handlers"
 	"exmpl.com/leaders/redis"
+	"exmpl.com/leaders/repository"
 	"exmpl.com/leaders/sqlite"
 )
 
 func initApp() {
-	config.AppConfig.Db = sqlite.InitSqlite()
+	sqliteRepo := sqlite.SqliteRepo{}
+	db := sqlite.InitSqlite()
+	r := repository.NewPersistenceservice(&sqliteRepo, db)
+
+	config.AppConfig.Db = db
+	config.AppConfig.PersistenceService = r
 	config.AppConfig.RedisClient = redis.InitRedis()
 	config.AppConfig.BetsChannel = "bets"
 
 	// TODO: think how to implement re-init of the engine
 	// when a new competition is added but no events are received
 	config.AppConfig.CompsChannel = make(chan int64, 100)
-	engine.InitEngine()
+	engine.InitEngine(config.AppConfig.PersistenceService)
 }
 
 var ctx = context.Background()
