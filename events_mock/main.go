@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"log"
 	"math/rand"
@@ -14,7 +15,6 @@ import (
 
 const BurstFactor = 5
 const RatePerSec = 10
-const UserCount = 70
 const BurstProbability = 0.2
 const BetsChannel = "bets"
 
@@ -53,7 +53,13 @@ func getRedisClient() *redis.Client {
 	return rdb
 }
 
+var UserCount = 10
+
 func main() {
+	numUsers := flag.Int("users", 10, "number of users to generate events for")
+	flag.Parse()
+	UserCount = *numUsers
+
 	limiter := rate.NewLimiter(RatePerSec, RatePerSec*BurstFactor)
 	// control := make(chan bool)
 	fmt.Printf("Starting with token balance: %f \n", limiter.Tokens())
