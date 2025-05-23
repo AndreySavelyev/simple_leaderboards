@@ -69,6 +69,10 @@ type Repository interface {
 	GetAllCompetitions(db *sql.DB) ([]Competition, error)
 	GetCompetitionById(db *sql.DB, id int64) (Competition, error)
 	CreateCompetition(db *sql.DB, start, end int, rules string)
+	CreateUser(db *sql.DB, user_id int)
+	CreateBet(db *sql.DB, event *Event, comp_id int64)
+	CreateEvent(db *sql.DB, event *Event)
+	GetLeaderboardByCompetitionId(db *sql.DB, compId, limit int) (*Leaderboard, error)
 }
 
 type PersistenceService struct {
@@ -98,4 +102,20 @@ func (s *PersistenceService) GetCompetitionById(id int64) (Competition, error) {
 
 func (s *PersistenceService) AddCompetition(start, end int, rules string) {
 	s.repository.CreateCompetition(s.db, start, end, rules)
+}
+
+func (s *PersistenceService) CreateUser(user_id int) {
+	s.repository.CreateUser(s.db, user_id)
+}
+
+func (s *PersistenceService) CreateBet(event *Event, comp_id int64) {
+	s.repository.CreateBet(s.db, event, comp_id)
+}
+
+func (s *PersistenceService) CreateEvent(event *Event) {
+	s.repository.CreateEvent(s.db, event)
+}
+
+func (s *PersistenceService) GetLeaderboardByCompetitionId(compId, limit int) (*Leaderboard, error) {
+	return s.repository.GetLeaderboardByCompetitionId(s.db, compId, limit)
 }

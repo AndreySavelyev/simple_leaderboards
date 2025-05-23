@@ -6,15 +6,14 @@ import (
 	// "exmpl.com/leaders/config"
 	"exmpl.com/leaders/config"
 	"exmpl.com/leaders/repository"
-	"exmpl.com/leaders/sqlite"
 	"github.com/expr-lang/expr"
 )
 
 var Competitions = make([]repository.Competition, 0)
-var Persistence repository.PersistenceService
+var Persistence *repository.PersistenceService
 
 func InitEngine(persistence *repository.PersistenceService) {
-	Persistence = *persistence
+	Persistence = persistence
 	// TODO: make loading only for the comps that are relevant for current time
 	comps, err := Persistence.GetCompetitions()
 	if err != nil {
@@ -33,6 +32,7 @@ func InitEngine(persistence *repository.PersistenceService) {
 	}
 }
 
+// TODO: add a test
 func ProcessEvent(event *repository.Event) {
 	select {
 	case newCompId := <-config.AppConfig.CompsChannel:
@@ -59,8 +59,8 @@ func ProcessEvent(event *repository.Event) {
 }
 
 func processEvent(event *repository.Event) {
-	sqlite.CreateUser(event.UserId)
-	sqlite.CreateEvent(event)
+	Persistence.CreateUser(event.UserId)
+	Persistence.CreateEvent(event)
 	for _, comp := range Competitions {
 		if comp.IsRunningNow() && comp.Compiles {
 			output, err := expr.Run(comp.CompiledRules, event)
@@ -68,7 +68,7 @@ func processEvent(event *repository.Event) {
 				panic(err)
 			}
 			if output != 0 {
-				sqlite.CreateBet(event, comp.Id)
+				Persistence.CreateBet(event, comp.Id)
 				log.Println("Event processed successfully for comp: ", comp.Id)
 			} else {
 				// log.Printf("No processing for this comp.")

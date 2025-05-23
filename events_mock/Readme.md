@@ -24,6 +24,6 @@ There is a duplication of information between this service and the consumer rega
 ## How to run
 Open a terminal tab
 ```
-> go build main.go && ./main
+> go build main.go && ./main -users 50
 ```
 The service will that logging some info about the events generated.

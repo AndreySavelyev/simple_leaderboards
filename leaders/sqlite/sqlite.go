@@ -160,23 +160,22 @@ func (r *SqliteRepo) GetAllCompetitions(db *sql.DB) ([]repository.Competition, e
 
 	return competitions, nil
 }
-
-func CreateUser(user_id int) {
-	_, err := config.AppConfig.Db.Exec("INSERT OR IGNORE INTO users (user_id) VALUES (?)", user_id)
+func (r *SqliteRepo) CreateUser(db *sql.DB, user_id int) {
+	_, err := db.Exec("INSERT OR IGNORE INTO users (user_id) VALUES (?)", user_id)
 	if err != nil {
 		log.Println("Error creating user:", err)
 	}
 }
 
-func CreateBet(event *repository.Event, comp_id int64) {
-	_, err := config.AppConfig.Db.Exec("INSERT INTO bets (user_id, amount, competition_id) VALUES (?, ?, ?)", event.UserId, event.BaseAmount(), comp_id)
+func (r *SqliteRepo) CreateBet(db *sql.DB, event *repository.Event, comp_id int64) {
+	_, err := db.Exec("INSERT INTO bets (user_id, amount, competition_id) VALUES (?, ?, ?)", event.UserId, event.BaseAmount(), comp_id)
 	if err != nil {
 		log.Println("Error creating bet:", err)
 	}
 }
 
-func CreateEvent(event *repository.Event) {
-	_, err := config.AppConfig.Db.Exec("INSERT INTO events (event_type, user_id, amount, currency, exchange_rate, game, distributor, studio, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+func (r *SqliteRepo) CreateEvent(db *sql.DB, event *repository.Event) {
+	_, err := db.Exec("INSERT INTO events (event_type, user_id, amount, currency, exchange_rate, game, distributor, studio, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
 		event.EventType,
 		event.UserId,
 		event.Amount,
@@ -191,12 +190,12 @@ func CreateEvent(event *repository.Event) {
 	}
 }
 
-func GetLeaderboardByCompetitionId(comp_id int, limit int) (repository.Leaderboard, error) {
+func (r *SqliteRepo) GetLeaderboardByCompetitionId(db *sql.DB, comp_id int, limit int) (*repository.Leaderboard, error) {
 	var lb repository.Leaderboard
-	rows, err := config.AppConfig.Db.Query("SELECT user_id, sum(amount) FROM bets WHERE competition_id = ? group by user_id order by sum(amount) desc limit ?", comp_id, limit)
+	rows, err := db.Query("SELECT user_id, sum(amount) FROM bets WHERE competition_id = ? group by user_id order by sum(amount) desc limit ?", comp_id, limit)
 	if err != nil {
 		log.Fatal(err)
-		return lb, err
+		return &lb, err
 	}
 	defer rows.Close()
 	rank := 1
@@ -204,7 +203,7 @@ func GetLeaderboardByCompetitionId(comp_id int, limit int) (repository.Leaderboa
 		var p repository.Player
 		if err := rows.Scan(&p.Id, &p.Amount); err != nil {
 			log.Fatal(err)
-			return lb, err
+			return &lb, err
 		}
 		p.Rank = rank
 		rank++
@@ -212,5 +211,5 @@ func GetLeaderboardByCompetitionId(comp_id int, limit int) (repository.Leaderboa
 	}
 
 	lb.CompetitionId = comp_id
-	return lb, nil
+	return &lb, nil
 }

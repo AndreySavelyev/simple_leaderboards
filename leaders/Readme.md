@@ -10,6 +10,7 @@ The service consists of several modules:
 - `handlers` provides HTTP handlers for the Web API of the service
 - `redis` provides the Redis client connected to the server
 - `sqlite` is the module to do everything with the DB, it has functions to create necessary tables as well for adding records to them, all DB communication is done via this module
+- `repository` was created in order to decouple the app from the persistence layer so it should be easier to replace the DB backend or test the app(turns out the testing has proven to be dufficult)
 
 At boot, the application initializes connections to Redis & SQLite, creates necessary tables and indices(if not already) and starts HTTP server as well as a goroutine for the OS signal processing.
 
@@ -97,3 +98,9 @@ Run
 ```
 go test ./... -v
 ```
+
+## TODO:
+Things that are not done:
+- test coverage, I've started writing tests but experienced issues with mocking necessary types and interfaces and this is taking too much time for me to fix atm
+- things I would add tests for are as a minimum: engine, handlers, and sqlite. Config and redis are pretty trivial, consumer is almost completely using the Redis capabilities. Repository is pretty much a wrapper. So these would have a lower priority in my opinion.
+

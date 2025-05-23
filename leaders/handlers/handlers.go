@@ -11,7 +11,6 @@ import (
 	"exmpl.com/leaders/config"
 	"exmpl.com/leaders/engine"
 	"exmpl.com/leaders/repository"
-	"exmpl.com/leaders/sqlite"
 )
 
 func RootHandler(w http.ResponseWriter, r *http.Request) {
@@ -102,7 +101,7 @@ func GetLeaderboard(w http.ResponseWriter, r *http.Request) {
 	if limit == 0 {
 		limit = 10
 	}
-	lb, err := sqlite.GetLeaderboardByCompetitionId(compId, limit)
+	lb, err := config.AppConfig.PersistenceService.GetLeaderboardByCompetitionId(compId, limit)
 	if err != nil {
 		log.Println("Error getting leaderboard:", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
