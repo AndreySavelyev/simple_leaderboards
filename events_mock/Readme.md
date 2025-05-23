@@ -22,7 +22,11 @@ Some events' attributes such are Currencies, Game names, Distributors, Studios a
 There is a duplication of information between this service and the consumer regarging the currencies and probably something more centralied could've been preferred, but for the ease of implementation, I decided to go this way.
 
 ## How to run
-Open a terminal tab
+
+### Pre-requisite:
+  - you need to install Redis and have the server running
+
+- Open a terminal tab
 ```
 > go build main.go && ./main -users 50
 ```

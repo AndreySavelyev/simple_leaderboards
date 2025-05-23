@@ -17,7 +17,11 @@ At boot, the application initializes connections to Redis & SQLite, creates nece
 Once signal is received(`syscall.SIGINT` or `syscall.SIGTERM`), a message is sent to a channel and shutdown flag is set to True, then Redis consumer gets stopped and after 2 seconds, the HTTP server gets stopped too.
 
 ## How to run
-Open a terminal tab
+
+### Pre-requisite:
+  - you need to install Redis and have the server runningand have the server running
+
+- Open a terminal tab
 ```
 > go build main.go && ./main
 ```
