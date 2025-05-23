@@ -8,7 +8,7 @@ import (
 
 	"exmpl.com/leaders/config"
 	"exmpl.com/leaders/engine"
-	"exmpl.com/leaders/sqlite"
+	"exmpl.com/leaders/repository"
 )
 
 func ConsumeEvents(ctx context.Context, config *config.Cfg) {
@@ -36,7 +36,7 @@ func ConsumeEvents(ctx context.Context, config *config.Cfg) {
 			panic(err)
 		}
 
-		event := sqlite.Event{}
+		event := repository.Event{}
 
 		if err := json.Unmarshal([]byte(msg.Payload), &event); err != nil {
 			panic(err)

@@ -10,6 +10,7 @@ import (
 
 	"exmpl.com/leaders/config"
 	"exmpl.com/leaders/engine"
+	"exmpl.com/leaders/repository"
 	"exmpl.com/leaders/sqlite"
 )
 
@@ -27,10 +28,10 @@ func GetCompetitions(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	var competitions []sqlite.Competition
+	var competitions []repository.Competition
 
 	for rows.Next() {
-		var cm sqlite.Competition
+		var cm repository.Competition
 		if err := rows.Scan(&cm.Id, &cm.StartAt, &cm.EndAt, &cm.Rules); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -40,7 +41,7 @@ func GetCompetitions(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/html")
 	funcMap := template.FuncMap{
-		"running": func(comp sqlite.Competition) string { return strconv.FormatBool(comp.IsRunningNow()) },
+		"running": func(comp repository.Competition) string { return strconv.FormatBool(comp.IsRunningNow()) },
 	}
 	var tmplFile = "competitions.html"
 	tmpl, _ := template.New(tmplFile).Funcs(funcMap).ParseFiles(tmplFile)
@@ -57,7 +58,7 @@ func PostCompetition(w http.ResponseWriter, r *http.Request) {
 	en, _ := strconv.Atoi(r.PostFormValue("end_at"))
 	rules := r.PostFormValue("rules")
 
-	sqlite.InsertCompetition(st, en, rules)
+	config.AppConfig.PersistenceService.AddCompetition(st, en, rules)
 
 	log.Println("Competition created:", st, en, rules)
 	fmt.Fprintf(w, "Competition created\n")
@@ -162,9 +163,9 @@ func GetLeaderboard(w http.ResponseWriter, r *http.Request) {
 // 		return
 // 	}
 // 	defer rows.Close()
-// 	var competitions []sqlite.Competition
+// 	var competitions []repository.Competition
 // 	for rows.Next() {
-// 		var cm sqlite.Competition
+// 		var cm repository.Competition
 // 		if err := rows.Scan(&cm.Id, &cm.StartAt, &cm.EndAt, &cm.Rules); err != nil {
 // 			http.Error(w, err.Error(), http.StatusInternalServerError)
 // 			return

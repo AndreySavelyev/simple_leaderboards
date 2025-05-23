@@ -22,7 +22,7 @@ func InitEngine(persistence *repository.PersistenceService) {
 	}
 	log.Printf("Loaded %d competitions\n", len(comps))
 	for _, comp := range comps {
-		program, err := expr.Compile(comp.Rules, expr.Env(sqlite.Event{}))
+		program, err := expr.Compile(comp.Rules, expr.Env(repository.Event{}))
 		if err != nil {
 			log.Printf("Error compiling rules: %s for competition %d. Marking as invalid", err, comp.Id)
 			comp.Compiles = false
@@ -33,7 +33,7 @@ func InitEngine(persistence *repository.PersistenceService) {
 	}
 }
 
-func ProcessEvent(event *sqlite.Event) {
+func ProcessEvent(event *repository.Event) {
 	select {
 	case newCompId := <-config.AppConfig.CompsChannel:
 		newComp, err := Persistence.GetCompetitionById(newCompId)
@@ -42,7 +42,7 @@ func ProcessEvent(event *sqlite.Event) {
 			return
 		}
 		log.Println("New competition received:", newComp)
-		program, err := expr.Compile(newComp.Rules, expr.Env(sqlite.Event{}))
+		program, err := expr.Compile(newComp.Rules, expr.Env(repository.Event{}))
 		if err != nil {
 			log.Printf("Error compiling rules: %s for competition %d. Marking as invalid", err, newComp.Id)
 			newComp.Compiles = false
@@ -58,7 +58,7 @@ func ProcessEvent(event *sqlite.Event) {
 	}
 }
 
-func processEvent(event *sqlite.Event) {
+func processEvent(event *repository.Event) {
 	sqlite.CreateUser(event.UserId)
 	sqlite.CreateEvent(event)
 	for _, comp := range Competitions {
