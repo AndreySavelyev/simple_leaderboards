@@ -43,6 +43,10 @@ curl --location 'localhost:8080/competitions' \
 
 Once a competition is created via the API, it gets picked up by the engine and is taken into consideration for all the incoming events without the need of restarting the service.
 
+## How to see competitions and leaderboards
+
+Open `localhost:8080/` in your browser
+
 ## DB schema
 
 ```SQL
