@@ -25,9 +25,10 @@ func InitEngine(persistence *repository.PersistenceService) {
 		if err != nil {
 			log.Printf("Error compiling rules: %s for competition %d. Marking as invalid", err, comp.Id)
 			comp.Compiles = false
+		} else {
+			comp.Compiles = true
+			comp.CompiledRules = program
 		}
-		comp.Compiles = true
-		comp.CompiledRules = program
 		Competitions = append(Competitions, comp)
 	}
 }
@@ -46,9 +47,10 @@ func ProcessEvent(event *repository.Event) {
 		if err != nil {
 			log.Printf("Error compiling rules: %s for competition %d. Marking as invalid", err, newComp.Id)
 			newComp.Compiles = false
+		} else {
+			newComp.Compiles = true
+			newComp.CompiledRules = program
 		}
-		newComp.Compiles = true
-		newComp.CompiledRules = program
 		Competitions = append(Competitions, newComp)
 		log.Println("New competitions count:", len(Competitions))
 		processEvent(event)
