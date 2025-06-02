@@ -23,7 +23,7 @@ type Cur struct {
 	ex_rate float64
 }
 
-var Currencies = [12]Cur{
+var Currencies = [13]Cur{
 	{"KWD", 3.2597402597402594},
 	{"BHD", 2.662337662337662},
 	{"OMR", 2.61038961038961},
@@ -34,8 +34,8 @@ var Currencies = [12]Cur{
 	{"CHF", 1.12987012987013},
 	{"EUR", 1.0909090909090908},
 	{"USD", 1.0},
-	{"BTC", 0.0000097},
-	{"ETH", 0.00039},
+	{"BTC", 103092.7835051546},
+	{"ETH", 2564.1025641026},
 }
 
 var Games = [5]string{"Poker", "Blackjack", "Roulette", "Baccarat", "Slots"}

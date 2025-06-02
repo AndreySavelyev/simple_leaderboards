@@ -167,8 +167,8 @@ func (r *SqliteRepo) CreateUser(db *sql.DB, user_id int) {
 	}
 }
 
-func (r *SqliteRepo) CreateBet(db *sql.DB, event *repository.Event, comp_id int64) {
-	_, err := db.Exec("INSERT INTO bets (user_id, amount, competition_id) VALUES (?, ?, ?)", event.UserId, event.BaseAmount(), comp_id)
+func (r *SqliteRepo) CreateBet(db *sql.DB, event *repository.Event, comp_id int64, contrib float64) {
+	_, err := db.Exec("INSERT INTO bets (user_id, amount, competition_id) VALUES (?, ?, ?)", event.UserId, contrib, comp_id)
 	if err != nil {
 		log.Println("Error creating bet:", err)
 	}
