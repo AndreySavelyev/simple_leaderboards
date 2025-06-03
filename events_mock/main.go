@@ -161,6 +161,7 @@ func randEventStudio() string {
 	return Studios[rand.Intn(len(Studios))]
 }
 
+
 // {
 // 	"event_type": "bet",
 // 	"user_id": "123",
