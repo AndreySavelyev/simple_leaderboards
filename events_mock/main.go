@@ -23,7 +23,7 @@ type Cur struct {
 	ex_rate float64
 }
 
-var Currencies = [13]Cur{
+var Currencies = [12]Cur{
 	{"KWD", 3.2597402597402594},
 	{"BHD", 2.662337662337662},
 	{"OMR", 2.61038961038961},
@@ -87,7 +87,6 @@ func main() {
 
 func gen_events(num int, redis_client *redis.Client) {
 	fmt.Printf("generated %d events for %d users. Time: %s \n", num, rand.Intn(UserCount)+1, time.Now().Format(time.TimeOnly))
-	fmt.Println(redis_client)
 
 	for i := 0; i <= num; i++ {
 		user_id := rand.Intn(UserCount) + 1
@@ -101,23 +100,24 @@ func gen_events(num int, redis_client *redis.Client) {
 }
 
 func build_bet(user_id int) Event {
-	var bet = float64(rand.Intn(100))
+	var bet_amount = float64(rand.Intn(100))
+
 	var event_type = randEventType()
 	var event_currency = randEventCurrency()
 
 	// NOTE: BTC & ETH are making too big numbers in the leaderboards
 	// so we adjust them a little to make them more realistic
 	if event_currency.name == "BTC" {
-		bet = bet / 100000.0
+		bet_amount = bet_amount / 100000.0
 	}
 	if event_currency.name == "ETH" {
-		bet = bet / 2000.0
+		bet_amount = bet_amount / 2000.0
 	}
 
 	var event = Event{
 		EventType:    event_type,
 		UserId:       user_id,
-		Amount:       bet,
+		Amount:       bet_amount,
 		Currency:     event_currency.name,
 		ExchangeRate: event_currency.ex_rate,
 		Game:         randEventGame(),
@@ -125,7 +125,7 @@ func build_bet(user_id int) Event {
 		Studio:       randEventStudio(),
 		Timestamp:    time.Now().Format(time.RFC3339),
 	}
-	log.Printf("User: %d | bet: %f", user_id, bet)
+	log.Printf("User: %d | bet_amount: %f | currency %s | event_type: %s ", user_id, bet_amount, event_currency.name, event_type)
 	return event
 
 }

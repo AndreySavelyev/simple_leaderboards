@@ -61,7 +61,7 @@ func createBetsTable(db *sql.DB) {
 	}
 
 	indSqlStmt := `
-		CREATE INDEX IF NOT EXISTS bets_idx on bets (competition_id);
+		CREATE UNIQUE INDEX IF NOT EXISTS bets_competition_user_idx on bets (competition_id, user_id);
 	`
 	_, err = db.Exec(indSqlStmt)
 	if err != nil {
@@ -168,7 +168,9 @@ func (r *SqliteRepo) CreateUser(db *sql.DB, user_id int) {
 }
 
 func (r *SqliteRepo) CreateBet(db *sql.DB, event *repository.Event, comp_id int64, contrib float64) {
-	_, err := db.Exec("INSERT INTO bets (user_id, amount, competition_id) VALUES (?, ?, ?)", event.UserId, contrib, comp_id)
+	query := `INSERT INTO bets (competition_id, user_id, amount) VALUES (?, ?, ?) ON CONFLICT DO UPDATE set amount = amount + ?;`
+
+	_, err := db.Exec(query, comp_id, event.UserId, contrib, contrib)
 	if err != nil {
 		log.Println("Error creating bet:", err)
 	}
@@ -192,7 +194,8 @@ func (r *SqliteRepo) CreateEvent(db *sql.DB, event *repository.Event) {
 
 func (r *SqliteRepo) GetLeaderboardByCompetitionId(db *sql.DB, comp_id int, limit int) (*repository.Leaderboard, error) {
 	var lb repository.Leaderboard
-	rows, err := db.Query("SELECT user_id, sum(amount) FROM bets WHERE competition_id = ? group by user_id order by sum(amount) desc limit ?", comp_id, limit)
+	query := `SELECT user_id, amount FROM bets WHERE competition_id = ? order by amount desc limit ?`
+	rows, err := db.Query(query, comp_id, limit)
 	if err != nil {
 		log.Fatal(err)
 		return &lb, err

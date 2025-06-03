@@ -1,3 +1,6 @@
 .DS_Store
 leaders/*.db
 leaders/leaderboards.db
+events_mock/leaderboards.db
+events_mock/main
+leaders/main
