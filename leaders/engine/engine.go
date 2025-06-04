@@ -87,7 +87,7 @@ func processEvent(event *repository.Event) {
 			output, err := expr.Run(comp.CompiledRules, event)
 			if err != nil {
 				log.Println("Error running rules: %s against an event %v. Error: ", comp.Rules, event, err)
-				// TODO: skip iteration
+				continue
 			}
 			if output != 0 {
 				Persistence.CreateBet(event, comp.Id, output.(float64))
