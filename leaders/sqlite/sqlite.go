@@ -15,7 +15,6 @@ func InitSqlite() *sql.DB {
 	db, err := sql.Open("sqlite3", "./leaderboards.db")
 	if err != nil {
 		log.Fatal(err)
-		panic(err)
 	}
 
 	createCompetitionsTable(db)
@@ -120,12 +119,12 @@ func createUsersTable(db *sql.DB) {
 func (r *SqliteRepo) CreateCompetition(db *sql.DB, start, end int, rules string) {
 	res, err := db.Exec(`INSERT INTO competitions (start_at, end_at, rules) VALUES (?, ?, ?)`, start, end, rules)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 		return
 	}
 	newId, err := res.LastInsertId()
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 		return
 	}
 	log.Println("New competition created with ID:", newId)
@@ -197,7 +196,7 @@ func (r *SqliteRepo) GetLeaderboardByCompetitionId(db *sql.DB, comp_id int, limi
 	query := `SELECT user_id, amount FROM bets WHERE competition_id = ? order by amount desc limit ?`
 	rows, err := db.Query(query, comp_id, limit)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 		return &lb, err
 	}
 	defer rows.Close()
@@ -205,7 +204,7 @@ func (r *SqliteRepo) GetLeaderboardByCompetitionId(db *sql.DB, comp_id int, limi
 	for rows.Next() {
 		var p repository.Player
 		if err := rows.Scan(&p.Id, &p.Amount); err != nil {
-			log.Fatal(err)
+			log.Println(err)
 			return &lb, err
 		}
 		p.Rank = rank

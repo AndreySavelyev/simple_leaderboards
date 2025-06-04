@@ -34,13 +34,16 @@ func ConsumeEvents(ctx context.Context, config *config.Cfg) {
 		msg, err := pubsub.ReceiveMessage(ctx)
 		if err != nil {
 			panic(err)
+			// or log & skip?
 		}
 
 		event := repository.Event{}
 
 		if err := json.Unmarshal([]byte(msg.Payload), &event); err != nil {
-			panic(err)
+			log.Println("Error unmarshalling a message", err)
+			continue
 		}
+
 		// log.Println(msg.Channel, event)
 		// log.Printf("Received ========================: %+v\n", event)
 		engine.ProcessEvent(&event)
