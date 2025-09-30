@@ -20,7 +20,7 @@ const BetsChannel = "bets"
 
 type Cur struct {
 	name    string
-	ex_rate float64
+	exRate float64
 }
 
 var Currencies = [12]Cur{
@@ -64,78 +64,78 @@ func main() {
 	// control := make(chan bool)
 	fmt.Printf("Starting with token balance: %f \n", limiter.Tokens())
 
-	var redis_client = getRedisClient()
+	var redisClient = getRedisClient()
 
 	for {
-		bets_count := RatePerSec
+		betCount := RatePerSec
 		if rand.Float32() > BurstProbability {
-			bets_count = RatePerSec * (rand.Intn(BurstFactor) + 1)
+			betCount = RatePerSec * (rand.Intn(BurstFactor) + 1)
 		}
 
-		r := limiter.ReserveN(time.Now(), bets_count)
+		r := limiter.ReserveN(time.Now(), betCount)
 		if !r.OK() {
 			fmt.Println("cannoooooot")
 		}
-		fmt.Printf("Tokens balance: %f, sleeping for %d seconds(%d ns) for bets count: %d \n", limiter.Tokens(), r.Delay()/1000000000, r.Delay(), bets_count)
+		fmt.Printf("Tokens balance: %f, sleeping for %d seconds(%d ns) for bets count: %d \n", limiter.Tokens(), r.Delay()/1000000000, r.Delay(), betCount)
 
 		time.Sleep(r.Delay())
-		gen_events(bets_count, redis_client)
+		genEvents(betCount, redisClient)
 		fmt.Println()
 	}
 
 }
 
-func gen_events(num int, redis_client *redis.Client) {
+func genEvents(num int, redisClient *redis.Client) {
 	fmt.Printf("generated %d events for %d users. Time: %s \n", num, rand.Intn(UserCount)+1, time.Now().Format(time.TimeOnly))
 
 	for i := 0; i <= num; i++ {
-		user_id := rand.Intn(UserCount) + 1
-		var bet = build_bet(user_id)
-		var bet_json, _ = json.Marshal(bet)
-		err := redis_client.Publish(ctx, BetsChannel, bet_json).Err()
+		userId := rand.Intn(UserCount) + 1
+		var bet = buildBet(userId)
+		var betJson, _ = json.Marshal(bet)
+		err := redisClient.Publish(ctx, BetsChannel, betJson).Err()
 		if err != nil {
 			panic(err)
 		}
 	}
 }
 
-func build_bet(user_id int) Event {
-	var bet_amount = float64(rand.Intn(100))
+func buildBet(userId int) Event {
+	var betAmount = float64(rand.Intn(100))
 
-	var event_type = randEventType()
-	var event_currency = randEventCurrency()
+	var eventType = randEventType()
+	var eventCurrency = randEventCurrency()
 
 	// NOTE: BTC & ETH are making too big numbers in the leaderboards
 	// so we adjust them a little to make them more realistic
-	if event_currency.name == "BTC" {
-		bet_amount = bet_amount / 100000.0
+	if eventCurrency.name == "BTC" {
+		betAmount = betAmount / 100000.0
 	}
-	if event_currency.name == "ETH" {
-		bet_amount = bet_amount / 2000.0
+	if eventCurrency.name == "ETH" {
+		betAmount = betAmount / 2000.0
 	}
 
 	var event = Event{
-		EventType:    event_type,
-		UserId:       user_id,
-		Amount:       bet_amount,
-		Currency:     event_currency.name,
-		ExchangeRate: event_currency.ex_rate,
+		EventType:    eventType,
+		UserId:       userId,
+		Amount:       betAmount,
+		Currency:     eventCurrency.name,
+		ExchangeRate: eventCurrency.exRate,
 		Game:         randEventGame(),
 		Distributor:  randEventDistributor(),
 		Studio:       randEventStudio(),
 		Timestamp:    time.Now().Format(time.RFC3339),
 	}
-	log.Printf("User: %d | bet_amount: %f | currency %s | event_type: %s ", user_id, bet_amount, event_currency.name, event_type)
+	log.Printf("User: %d | betAmount: %f | currency %s | eventType: %s ", userId, betAmount, eventCurrency.name, eventType)
 	return event
 
 }
 
 type Event struct {
-	EventType    string  `json:"event_type"` // bet, win, loss
-	UserId       int     `json:"user_id"`
+	EventType    string  `json:"eventType"` // bet, win, loss
+	UserId       int     `json:"userId"`
 	Amount       float64 `json:"amount"`
 	Currency     string  `json:"currency"`
-	ExchangeRate float64 `json:"exchange_rate"`
+	ExchangeRate float64 `json:"exchangeRate"`
 	Game         string  `json:"game"`
 	Distributor  string  `json:"distributor"`
 	Studio       string  `json:"studio"`
@@ -143,8 +143,8 @@ type Event struct {
 }
 
 func randEventType() string {
-	event_types := [3]string{"bet", "win", "loss"}
-	return event_types[rand.Intn(3)]
+	eventTypes := [3]string{"bet", "win", "loss"}
+	return eventTypes[rand.Intn(3)]
 }
 
 func randEventCurrency() Cur {
@@ -161,13 +161,12 @@ func randEventStudio() string {
 	return Studios[rand.Intn(len(Studios))]
 }
 
-
 // {
-// 	"event_type": "bet",
-// 	"user_id": "123",
+// 	"eventType": "bet",
+// 	"userId": "123",
 // 	"amount": 0.03,
 // 	"currency": "BTC",
-// 	"exchange_rate": 0.00001058,
+//  "exchangeRate": 0.00001058,
 // 	"game": "Poker",
 // 	"distributor": "DistributorX",
 // 	"studio": "StudioY",
